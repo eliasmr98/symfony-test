@@ -1,0 +1,37 @@
+services:
+  php:
+    image: ${IMAGES_PREFIX:-}app-php
+    restart: unless-stopped
+    env_file:
+      - .env.local
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      # HTTP
+      - target: 80
+        published: ${HTTP_PORT:-8009}
+        protocol: tcp
+      # HTTPS
+      - target: 443
+        published: ${HTTPS_PORT:-8008}
+        protocol: tcp
+      # HTTP/3
+      - target: 443
+        published: ${HTTP3_PORT:-8007}
+        protocol: udp
+    networks:
+      - shared-network
+    depends_on:
+      - database
+      - elasticsearch
+      - redis
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  shared-network:
+    external: true
+    driver: bridge
