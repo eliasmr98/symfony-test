@@ -2,6 +2,8 @@
 
 This repository provides a robust setup for deploying Symfony API projects using FrankenPHP. It is designed to work seamlessly for both local development and remote production environments.
 
+This is a modified version of Douglas symfony-deploy repo. The original example is [here](https://github.com/dunglas/symfony-docker)
+
 ### 🚀 Features
 - FrankenPHP Integration: Use modern PHP runtimes for performance and simplicity.
 - Dockerized Multistage Environment: Fully containerized setup for consistent deployment.
@@ -35,6 +37,13 @@ Ensure you have the following installed on your system:
 ### 🔧 Pre-Setup configuration
 
 - The deploy.sh file add git hooks and can be usefully to run local database creation, migrations and other commands. Feel fre to change git hooks to your needs, right now is set up to run phpstan, phpcs (those are not present so you must adapt it).
+- Disable https:
+``` yaml
+SERVER_NAME=http://localhost \
+TRUSTED_HOSTS='^localhost|php$' \
+APP_SECRET=ChangeMe \
+docker compose -f -compose.yaml -f compose.prod.yaml up --wait
+```
 
 ### 🚀 Quick Start
 
