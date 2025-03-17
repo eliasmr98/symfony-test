@@ -1,37 +1,36 @@
 services:
   php:
-    image: ${IMAGES_PREFIX:-}app-php
+    image: php-app
+    container_name: php-app-local
     restart: unless-stopped
-    env_file:
-      - .env.local
     volumes:
-      - caddy_data:/data
-      - caddy_config:/config
+      - php-app-caddy-data:/data
+      - php-app-caddy-config:/config
+      - ./:/app/
+    environment:
+      SYMFONY_VERSION: 7.2.*
+      STABILITY: stable
+      APP_ENV: local
+      XDEBUG_MODE: debug
     ports:
-      # HTTP
       - target: 80
-        published: ${HTTP_PORT:-8009}
+        published: ${HTTP_PORT:-8088}
         protocol: tcp
-      # HTTPS
-      - target: 443
-        published: ${HTTPS_PORT:-8008}
-        protocol: tcp
-      # HTTP/3
-      - target: 443
-        published: ${HTTP3_PORT:-8007}
-        protocol: udp
-    networks:
-      - shared-network
     depends_on:
       - database
-      - elasticsearch
-      - redis
+
+  database:
+    image: postgres:latest
+    container_name: database-app
+    ports:
+      - "5438:5432"
+    environment:
+      POSTGRES_USER: toor
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
 
 volumes:
-  caddy_data:
-  caddy_config:
-
-networks:
-  shared-network:
-    external: true
-    driver: bridge
+  php-app-caddy-data:
+  php-app-caddy-config:
+  app-db-data:

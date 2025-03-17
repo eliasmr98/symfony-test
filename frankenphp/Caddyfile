@@ -4,15 +4,13 @@
 	frankenphp {
 		{$FRANKENPHP_CONFIG}
 	}
+	auto_https off
 }
 
 {$CADDY_EXTRA_CONFIG}
 
-:80 {
-	redir https://{$SERVER_NAME}{uri}
-}
 
-{$SERVER_NAME:localhost} {
+:80 {
     log {
 		{$CADDY_SERVER_LOG_OPTIONS}
 	}
@@ -37,4 +35,3 @@
 
 	file_server
 }
-

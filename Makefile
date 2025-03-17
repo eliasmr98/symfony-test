@@ -1,8 +1,9 @@
 # Executables (local)
+APP_CONT_NAME = php
 DOCKER_COMP = docker compose
 
 # Docker containers
-PHP_CONT = $(DOCKER_COMP) exec php
+PHP_CONT = $(DOCKER_COMP) exec $(APP_CONT_NAME)
 
 # Executables
 PHP      = $(PHP_CONT) php
@@ -13,9 +14,12 @@ SYMFONY  = $(PHP) bin/console
 .DEFAULT_GOAL = help
 .PHONY        : help build up start down logs sh composer vendor sf cc test
 
-## —— 🎵 🐳 The Symfony Docker Makefile 🐳 🎵 ——————————————————————————————————
 help: ## Outputs this help screen
 	@grep -E '(^[a-zA-Z0-9\./_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}{printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}' | sed -e 's/\[32m##/[33m/'
+
+start:
+	@docker compose -f docker-compose.yaml up -d
+	@echo 'Api started at: http://localhost:$(api_port)'
 
 ## —— Docker 🐳 ————————————————————————————————————————————————————————————————
 build: ## Builds the Docker images
@@ -23,14 +27,13 @@ build: ## Builds the Docker images
 	@sh ./bin/deploy.sh
 
 up: ## Start the docker hub in detached mode (no logs)
+	@bash ./frankenphp/pre-env.sh
 	@$(DOCKER_COMP) up --detach
-
-start: build up ## Build and start the containers
 
 stop: ## Stop the docker hub
 	@$(DOCKER_COMP) stop
 
-down: ## Stop the docker hub
+destroy: ## Stop the docker hub
 	@$(DOCKER_COMP) down --remove-orphans
 
 logs: ## Show live logs
@@ -39,12 +42,13 @@ logs: ## Show live logs
 sh: ## Connect to the FrankenPHP container
 	@$(PHP_CONT) sh
 
-bash: ## Connect to the FrankenPHP container via bash so up and down arrows go to previous commands
+console: ## Connect to the FrankenPHP container via bash so up and down arrows go to previous commands
 	@$(PHP_CONT) bash
 
 test: ## Start tests with phpunit, pass the parameter "c=" to add options to phpunit, example: make test c="--group e2e --stop-on-failure"
 	@$(eval c ?=)
 	@$(DOCKER_COMP) exec -e APP_ENV=test php bin/phpunit $(c)
+	@$(DOCKER_COMP) exec -e APP_ENV=test php vendor/bin/behat $(c)
 
 
 ## —— Composer 🧙 ——————————————————————————————————————————————————————————————
